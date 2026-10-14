@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1b5e20" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Crop Health Tracker — Field Team App (Live Production)</title>
+  <style>
+    :root {
+      --bg: #f1f5f0;
+      --card: #ffffff;
+      --primary: #1b5e20;
+      --primary-dark: #113d14;
+      --primary-light: #e8f5e9;
+      --accent: #2e7d32;
+      --text: #1a241b;
+      --muted: #536455;
+      --border: #cfe0d0;
+      --low: #c62828;
+      --low-bg: #ffebee;
+      --low-border: #ef9a9a;
+      --normal: #2e7d32;
+      --normal-bg: #e8f5e9;
+      --normal-border: #a5d6a7;
+      --high: #ef6c00;
+      --high-bg: #fff3e0;
+      --high-border: #ffcc80;
+      --gold-bg: #fff8e1;
+      --gold-border: #ffe082;
+      --gold-text: #8d5100;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 88px;
+    }
+
+    .app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      background: linear-gradient(135deg, #1b5e20, #2e7d32);
+      color: #ffffff;
+      padding: 12px 16px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    .app-bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .app-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .step-pill {
+      background: rgba(255, 255, 255, 0.22);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 99px;
+      text-transform: uppercase;
+    }
+
+    .app-bar-sub {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+      font-size: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .scout-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.24);
+      padding: 4px 10px;
+      border-radius: 99px;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .scout-chip input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.75);
+      color: #fff;
+      font-weight: 700;
+      font-size: 12.5px;
+      width: 135px;
+      padding: 1px 4px;
+    }
+
+    .scout-chip input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .scout-chip input:focus {
+      outline: none;
+      border-bottom-color: #fff;
+    }
+
+    .sync-status-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #81c784;
+    }
+
+    .container {
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 12px 12px 24px;
+    }
+
+    .tab-screen { display: none; }
+    .tab-screen.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-header {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .form-group { margin-bottom: 12px; }
+
+    label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      background: #ffffff;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.18);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 46px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+
+    .btn-block { width: 100%; }
+    .btn-primary { background: var(--primary); color: #ffffff; }
+    .btn-secondary { background: #eaf2ea; color: var(--primary); border-color: #c5dec6; }
+    .btn-amber { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+    .btn-sm { min-height: 36px; padding: 6px 12px; font-size: 12.5px; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .badge-low { background: var(--low-bg); color: var(--low); border: 1px solid var(--low-border); }
+    .badge-normal { background: var(--normal-bg); color: var(--normal); border: 1px solid var(--normal-border); }
+    .badge-high { background: var(--high-bg); color: var(--high); border: 1px solid var(--high-border); }
+
+    .progress-bar-wrap {
+      background: #e2ece3;
+      border-radius: 99px;
+      height: 10px;
+      overflow: hidden;
+      margin: 6px 0 10px;
+    }
+
+    .progress-bar-fill {
+      background: var(--accent);
+      height: 100%;
+      width: 0%;
+      transition: width 0.25s ease;
+    }
+
+    .plant-strip {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 6px 2px 10px;
+      margin-bottom: 10px;
+      scrollbar-width: thin;
+    }
+
+    .plant-chip {
+      flex: 0 0 auto;
+      min-width: 48px;
+      height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: #f6f9f6;
+      border: 1.5px solid var(--border);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .plant-chip.saved-normal { background: var(--normal-bg); color: var(--normal); border-color: var(--normal-border); }
+    .plant-chip.saved-low { background: var(--low-bg); color: var(--low); border-color: var(--low-border); }
+    .plant-chip.saved-high { background: var(--high-bg); color: var(--high); border-color: var(--high-border); }
+    .plant-chip.active {
+      box-shadow: 0 0 0 2.5px var(--primary);
+      font-weight: 800;
+      transform: translateY(-1px);
+    }
+
+    .param-mobile-card {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: #fafcfa;
+    }
+
+    .param-top-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
+
+    .stepper-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stepper-btn {
+      width: 48px;
+      height: 46px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: #ffffff;
+      color: var(--primary);
+      font-size: 22px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+
+    .stepper-row input {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+    }
+
+    .kpi-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .kpi-box {
+      border-radius: 12px;
+      padding: 12px 8px;
+      text-align: center;
+      border: 1.5px solid transparent;
+    }
+
+    .kpi-box.low { background: var(--low-bg); border-color: var(--low-border); color: var(--low); }
+    .kpi-box.normal { background: var(--normal-bg); border-color: var(--normal-border); color: var(--normal); }
+    .kpi-box.high { background: var(--high-bg); border-color: var(--high-border); color: var(--high); }
+
+    .kpi-num { font-size: 24px; font-weight: 900; line-height: 1.1; }
+    .kpi-label { font-size: 11.5px; font-weight: 700; margin-top: 4px; }
+
+    .dist-bar {
+      display: flex;
+      height: 18px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: #e0e0e0;
+      margin-bottom: 14px;
+    }
+
+    .dist-seg-low { background: #e53935; height: 100%; transition: width 0.3s; }
+    .dist-seg-normal { background: #43a047; height: 100%; transition: width 0.3s; }
+    .dist-seg-high { background: #fb8c00; height: 100%; transition: width 0.3s; }
+
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .heatmap-cell {
+      padding: 8px 4px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: #f5f5f5;
+      color: var(--muted);
+    }
+
+    .heatmap-cell.low { background: var(--low-bg); color: var(--low); border-color: var(--low-border); }
+    .heatmap-cell.normal { background: var(--normal-bg); color: var(--normal); border-color: var(--normal-border); }
+    .heatmap-cell.high { background: var(--high-bg); color: var(--high); border-color: var(--high-border); }
+
+    .issue-card {
+      border-left: 5px solid var(--low);
+      background: #fffafa;
+      border-top: 1px solid var(--low-border);
+      border-right: 1px solid var(--low-border);
+      border-bottom: 1px solid var(--low-border);
+      border-radius: 10px;
+      padding: 13px;
+      margin-bottom: 12px;
+    }
+
+    .issue-card.high-issue {
+      border-left-color: var(--high);
+      background: #fffdf9;
+      border-top-color: var(--high-border);
+      border-right-color: var(--high-border);
+      border-bottom-color: var(--high-border);
+    }
+
+    .issue-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .plant-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin: 6px 0 8px;
+    }
+
+    .plant-tag {
+      background: #ffffff;
+      border: 1px solid #d0d7d0;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+
+    .solution-box {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 9px 11px;
+      margin-top: 6px;
+      font-size: 12.5px;
+      border: 1px solid #e0e8e0;
+    }
+
+    .harvest-hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .harvest-hero-grid { grid-template-columns: 1fr; }
+    }
+
+    .harvest-box {
+      background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
+      border: 1.5px solid #a5d6a7;
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .harvest-box.gold {
+      background: linear-gradient(135deg, #fffdf0, #fff8e1);
+      border-color: var(--gold-border);
+    }
+
+    .harvest-label {
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .harvest-main-val {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--primary);
+      margin-top: 4px;
+    }
+
+    .harvest-box.gold .harvest-main-val { color: var(--gold-text); }
+    .harvest-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .formula-breakdown {
+      background: #f8fbf8;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .formula-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .formula-row:last-child {
+      border-bottom: none;
+      font-weight: 800;
+      color: var(--primary);
+      font-size: 14px;
+      padding-top: 8px;
+    }
+
+    .locked-sync-banner {
+      background: #f2f7f2;
+      border: 1px solid #c8e0c9;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: #ffffff;
+      border-top: 1.5px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 950;
+      box-shadow: 0 -3px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .nav-item {
+      flex: 1;
+      height: 100%;
+      border: none;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+      background: #f4faf4;
+    }
+
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 16%;
+      right: 16%;
+      height: 3.5px;
+      background: var(--primary);
+      border-radius: 0 0 4px 4px;
+    }
+
+    .nav-icon { font-size: 18px; line-height: 1; }
+
+    .nav-badge {
+      position: absolute;
+      top: 5px;
+      right: 18%;
+      background: var(--low);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 99px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1b5e20;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      display: none;
+      z-index: 1000;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-bar">
+    <div class="app-bar-top">
+      <div class="app-title">🌱 Field Scout App</div>
+      <span class="step-pill">Live Production • My Plots Only</span>
+    </div>
+    <div class="app-bar-sub">
+      <div class="scout-chip">
+        <span>👤 Scout Login:</span>
+        <input type="text" id="scoutLoginInput" placeholder="Enter your name" value="Ramesh" aria-label="Scout Name" />
+      </div>
+      <div class="sync-status-row">
+        <span class="status-dot" id="netDot"></span>
+        <span id="unsyncedCountTop">0 Pending Sync</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- TAB 1: FIELD ENTRY -->
+    <div id="tab-entry" class="tab-screen active">
+      <div class="card">
+        <div class="card-header">
+          <span>1. Plot, Crop &amp; Age Setup</span>
+          <span class="badge badge-normal" id="stageBadgeHeader">Flowering Stage</span>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="plotName">Plot Name / Number</label>
+            <input type="text" id="plotName" placeholder="Enter Plot Name (e.g., Plot A)" value="" />
+          </div>
+          <div class="form-group">
+            <label for="plotArea">Area (Acres)</label>
+            <input type="number" id="plotArea" value="1" min="0.25" max="50" step="0.25" inputmode="decimal" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cropSelect">Select Crop (10 Farm Crops)</label>
+          <select id="cropSelect">
+            <option value="hybrid_tomato">1. Hybrid Tomato</option>
+            <option value="cherry_tomato">2. Cherry Tomato</option>
+            <option value="green_capsicum">3. Green Capsicum</option>
+            <option value="bell_peppers">4. Colored Bell Peppers</option>
+            <option value="zucchini">5. Zucchini</option>
+            <option value="broccoli">6. Broccoli</option>
+            <option value="red_cabbage">7. Red Cabbage</option>
+            <option value="maize">8. Maize (Corn)</option>
+            <option value="french_beans">9. French Beans</option>
+            <option value="watermelon">10. Watermelon</option>
+          </select>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group" style="margin-bottom: 4px;">
+            <label for="inspectDate">Inspection Date</label>
+            <input type="date" id="inspectDate" value="2026-10-14" />
+          </div>
+          <div class="form-group" style="margin-bottom: 4px;">
+            <label for="cropAge">Crop Age (Days - DAS)</label>
+            <input type="number" id="cropAge" value="40" min="1" max="150" inputmode="numeric" />
+          </div>
+        </div>
+
+        <div style="background: #f3f8f3; border-radius: 10px; padding: 10px 12px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="font-size: 13px; font-weight: 700; color: var(--primary);" id="sampleRuleText">
+            Target: 20 Marked Plants (1 Acre × 20/acre)
+          </div>
+          <button class="btn btn-secondary btn-sm" id="clearPlotSessionBtn">↺ Reset Current Form</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span id="plantRecorderHeader">Marked Plant #1 of 20</span>
+          <span class="badge badge-normal" id="plantProgressBadge">0 / 20 Logged</span>
+        </div>
+
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+
+        <div class="hint" style="margin-bottom: 4px;">Swipe &amp; tap any marked plant number to enter readings:</div>
+        <div class="plant-strip" id="plantChipStrip"></div>
+
+        <div id="mobileParamsContainer"></div>
+
+        <div class="form-grid-2" style="margin-top: 10px;">
+          <button class="btn btn-secondary" id="prevPlantBtn">← Prev Plant</button>
+          <button class="btn btn-primary" id="saveNextPlantBtn">✓ Save Plant &amp; Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MY PLOT DASHBOARD -->
+    <div id="tab-dashboard" class="tab-screen">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div id="dashPlotTitle">Current Plot • Hybrid Tomato</div>
+            <div class="hint" id="dashStageSub">Day 40 • Flowering Stage • 20 Plants</div>
+          </div>
+        </div>
+
+        <div class="kpi-grid-3">
+          <div class="kpi-box low">
+            <div class="kpi-num" id="kpiLowCount">0</div>
+            <div class="kpi-label">Low Growth<br>(Needs Care)</div>
+          </div>
+          <div class="kpi-box normal">
+            <div class="kpi-num" id="kpiNormalCount">0</div>
+            <div class="kpi-label">Normal Growth<br>(On Target)</div>
+          </div>
+          <div class="kpi-box high">
+            <div class="kpi-num" id="kpiHighCount">0</div>
+            <div class="kpi-label">High Growth<br>(Vigorous)</div>
+          </div>
+        </div>
+
+        <div class="dist-bar">
+          <div class="dist-seg-low" id="barLow" style="width: 0%;"></div>
+          <div class="dist-seg-normal" id="barNormal" style="width: 0%;"></div>
+          <div class="dist-seg-high" id="barHigh" style="width: 0%;"></div>
+        </div>
+
+        <label>Interactive Marked Plant Map (Tap any plant tile to log/edit):</label>
+        <div class="heatmap-grid" id="heatmapGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span>My Plot Parameter Averages vs. Target</span>
+        </div>
+        <div id="paramAveragesList"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: PLANT HEALTH ADVISOR -->
+    <div id="tab-advisor" class="tab-screen">
+      <div class="card">
+        <div class="card-header">
+          <span>🩺 Plants Needing Attention &amp; Solutions</span>
+          <span class="badge badge-low" id="attentionTotalBadge">0 Flagged</span>
+        </div>
+        <p class="hint" style="margin-bottom: 12px;">
+          Exact marked plants in your current plot outside normal parameters, with diagnosis and field action:
+        </p>
+        <div id="diagnosticsContainer"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: MY HARVEST & HARDCODED GOOGLE SHEETS CLOUD SYNC -->
+    <div id="tab-harvest" class="tab-screen">
+      <div class="card">
+        <div class="card-header">
+          <span>🌾 My Plot Harvest Forecast</span>
+          <span class="badge badge-normal" id="harvestHealthFactorBadge">Health Index: 100%</span>
+        </div>
+
+        <div class="harvest-hero-grid">
+          <div class="harvest-box">
+            <div class="harvest-label">📅 Estimated First Harvest</div>
+            <div class="harvest-main-val" id="harvestDateDisplay">—</div>
+            <div class="harvest-sub" id="harvestCountdownDisplay">Log plants on Tab 1</div>
+          </div>
+
+          <div class="harvest-box gold">
+            <div class="harvest-label">⚖️ Projected Plot Harvest</div>
+            <div class="harvest-main-val" id="harvestYieldTonnesDisplay">—</div>
+            <div class="harvest-sub" id="harvestYieldKgDisplay">—</div>
+          </div>
+        </div>
+
+        <div class="formula-breakdown" id="harvestBreakdownBox"></div>
+
+        <div style="margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <button class="btn btn-secondary" id="savePlotToDbBtn">
+            💾 Save Offline Only
+          </button>
+          <button class="btn btn-primary" id="saveAndSyncNowBtn">
+            🔄 Save &amp; Sync to Cloud
+          </button>
+        </div>
+      </div>
+
+      <!-- STRICTLY PERSONAL LOGS FOR LOGGED-IN SCOUT ONLY -->
+      <div class="card">
+        <div class="card-header">
+          <span>🔒 My Saved Plot Logs (<span id="myScoutNameHeader">Ramesh</span> Only)</span>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-secondary btn-sm" id="clearLocalHistoryBtn">🗑️ Clear Local List</button>
+            <button class="btn btn-primary btn-sm" id="syncServerBtn">🔄 Sync Pending Now</button>
+          </div>
+        </div>
+
+        <div class="locked-sync-banner">
+          <div>
+            <strong>☁️ Cloud Sync Server:</strong> Connected &amp; Hardcoded
+            <div class="hint" id="lastSyncLabel">Ready to sync your plots directly to the Master Google Sheet.</div>
+          </div>
+          <span class="badge badge-normal">🔒 Hardcoded</span>
+        </div>
+
+        <div id="mySavedLogsList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANDROID 4-TAB BOTTOM NAVIGATION -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" data-tab="tab-entry">
+      <span class="nav-icon">📋</span>
+      <span>1. Entry</span>
+    </button>
+    <button class="nav-item" data-tab="tab-dashboard">
+      <span class="nav-icon">📊</span>
+      <span>2. My Plot</span>
+    </button>
+    <button class="nav-item" data-tab="tab-advisor">
+      <span class="nav-icon">🩺</span>
+      <span>3. Advisor</span>
+      <span class="nav-badge" id="navAdvisorBadge" style="display: none;">0</span>
+    </button>
+    <button class="nav-item" data-tab="tab-harvest">
+      <span class="nav-icon">🌾</span>
+      <span>4. My Sync</span>
+    </button>
+  </nav>
+
+  <div class="toast" id="toastEl">Saved</div>
+
+  <script>
+    const HARDCODED_CLOUD_CONFIG = Object.freeze({
+      syncUrl: "https://script.google.com/macros/s/AKfycbzezHK7XHX2byX_HxH65sTc9ykokB1i5uVnK0Y-b0rN6nnS5D-ug8GkZlp3tof2lYhmxg/exec",
+      storageKey: "crop_tracker_field_queue_v2",
+      userKey: "crop_tracker_live_scout_v2",
+      broadcastChannelName: "crop_tracker_live_prod_channel_v1"
+    });
+
+    const syncChannel = typeof BroadcastChannel !== "undefined"
+      ? new BroadcastChannel(HARDCODED_CLOUD_CONFIG.broadcastChannelName)
+      : null;
+
+    const AGRONOMIC_ADVISOR = {
+      height: {
+        lowIssue: "Stunted plant height / slow canopy buildup",
+        lowCause: "Root-zone moisture deficit, early phosphorus/nitrogen shortage, or topsoil compaction.",
+        lowSolution: "Check drip emitters near flagged plants, drench root zone with 19:19:19 (4 g/L) + humic acid.",
+        highIssue: "Excessive vegetative stretching / tall spindly stem",
+        highCause: "Excess urea/ammoniacal nitrogen or crowding/shading between plants.",
+        highSolution: "Pause nitrogen top-dressing for 7–10 days and apply 0:52:34 (MKP) at 3 g/L."
+      },
+      node_len: {
+        lowIssue: "Compressed / short internode length",
+        lowCause: "Water stress, zinc/boron micronutrient lockup, or chilly night stress.",
+        lowSolution: "Verify uniform drip irrigation and apply chelated Zinc + Boron foliar spray (1.5 g/L).",
+        highIssue: "Elongated / rank internode spacing",
+        highCause: "High nitrogen fertility paired with warm microclimate causing vegetative surge.",
+        highSolution: "Cut back nitrogen feed, increase potassium ratio, and prune lower leaves."
+      },
+      flowers: {
+        lowIssue: "Low open flower count / flower bud drop",
+        lowCause: "Boron & Calcium deficiency during bud initiation or thrips damage.",
+        lowSolution: "Spray Boron 20% (1 g/L) + Calcium Nitrate and keep soil moisture steady.",
+        highIssue: "Heavy flower flush exceeding canopy balance",
+        highCause: "Strong reproductive surge that can exhaust young plants if potassium is low.",
+        highSolution: "Boost fertigation with Potassium Nitrate (13:0:45) and Magnesium Sulphate."
+      },
+      fruits: {
+        lowIssue: "Low fruit / pod / cob / melon set per plant",
+        lowCause: "Poor pollination, flower drop from heat stress, or low potassium.",
+        lowSolution: "Apply 0:0:50 (SOP) + Calcium-Boron foliar feed and maintain steady morning irrigation.",
+        highIssue: "Heavy fruit load (risk of small fruit or branch snapping)",
+        highCause: "High cluster set exceeding leaf area support.",
+        highSolution: "Support branches with twine/stakes, thin deformed fruits, and boost potassium by 15%."
+      },
+      size: {
+        lowIssue: "Undersized fruit / head / cob / pod dimensions",
+        lowCause: "Potassium deficit during bulking stage or root-zone water stress.",
+        lowSolution: "Fertigate with Potassium Sulphate (0:0:50 at 4–5 kg/acre) and irrigate consistently.",
+        highIssue: "Oversized fruit / head (risk of splitting)",
+        highCause: "Sudden heavy irrigation or excess nitrogen late in maturation.",
+        highSolution: "Regulate irrigation evenly, supplement calcium, and harvest promptly."
+      },
+      foliage: {
+        lowIssue: "Low healthy leaf / branch count",
+        lowCause: "Early nitrogen/magnesium deficiency or root establishment stress.",
+        lowSolution: "Apply balanced NPK + Magnesium Sulphate (2 g/L) foliar spray.",
+        highIssue: "Dense canopy / excessive branching",
+        highCause: "High early nitrogen causing crowded foliage.",
+        highSolution: "Prune excess side shoots where applicable and monitor inner canopy for mildew."
+      }
+    };
+
+    const CROP_DATABASE = {
+      hybrid_tomato: {
+        name: "Hybrid Tomato",
+        maturityDays: 95,
+        plantsPerAcre: 4500,
+        targetYieldPerPlantKg: 2.8,
+        stages: [
+          {
+            maxAge: 30,
+            stageCategory: "Vegetative",
+            stageName: "Vegetative Stage (1–30 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Plant Height", unit: "cm", minNormal: 24, maxNormal: 40, defaultVal: 30, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.5, maxNormal: 5.5, defaultVal: 4.5, step: 0.5 },
+              { id: "leaves", diagType: "foliage", label: "Compound Leaves", unit: "leaves", minNormal: 8, maxNormal: 13, defaultVal: 10, step: 1 }
+            ]
+          },
+          {
+            maxAge: 60,
+            stageCategory: "Flowering",
+            stageName: "Flowering Stage (31–60 DAS)",
+            parameters: [
+              { id: "flowers", diagType: "flowers", label: "Open Flowers Count", unit: "flowers", minNormal: 14, maxNormal: 26, defaultVal: 18, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 4.0, maxNormal: 6.5, defaultVal: 5.0, step: 0.5 },
+              { id: "trusses", diagType: "flowers", label: "Active Flower Trusses", unit: "trusses", minNormal: 3, maxNormal: 6, defaultVal: 4, step: 1 },
+              { id: "height", diagType: "height", label: "Plant Height", unit: "cm", minNormal: 60, maxNormal: 90, defaultVal: 74, step: 2 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Fruiting Stage (61+ DAS)",
+            parameters: [
+              { id: "fruits", diagType: "fruits", label: "Set Fruits per Plant", unit: "fruits", minNormal: 22, maxNormal: 38, defaultVal: 28, step: 1 },
+              { id: "fruit_dia", diagType: "size", label: "Fruit Diameter", unit: "mm", minNormal: 50, maxNormal: 70, defaultVal: 58, step: 2 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 4.5, maxNormal: 7.0, defaultVal: 5.5, step: 0.5 }
+            ]
+          }
+        ]
+      },
+      cherry_tomato: {
+        name: "Cherry Tomato",
+        maturityDays: 80,
+        plantsPerAcre: 4000,
+        targetYieldPerPlantKg: 2.1,
+        stages: [
+          {
+            maxAge: 25,
+            stageCategory: "Vegetative",
+            stageName: "Vegetative Vine (1–25 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Vine Height", unit: "cm", minNormal: 28, maxNormal: 45, defaultVal: 35, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 4.0, maxNormal: 6.5, defaultVal: 5.0, step: 0.5 },
+              { id: "leaves", diagType: "foliage", label: "Healthy Leaves", unit: "leaves", minNormal: 9, maxNormal: 15, defaultVal: 12, step: 1 }
+            ]
+          },
+          {
+            maxAge: 50,
+            stageCategory: "Flowering",
+            stageName: "Multi-Truss Flowering (26–50 DAS)",
+            parameters: [
+              { id: "flowers", diagType: "flowers", label: "Open Flowers Count", unit: "flowers", minNormal: 25, maxNormal: 50, defaultVal: 36, step: 2 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 4.5, maxNormal: 7.5, defaultVal: 5.8, step: 0.5 },
+              { id: "trusses", diagType: "flowers", label: "Flowering Trusses", unit: "trusses", minNormal: 4, maxNormal: 8, defaultVal: 6, step: 1 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Cluster Fruiting (51+ DAS)",
+            parameters: [
+              { id: "fruits", diagType: "fruits", label: "Cherry Fruits Set", unit: "fruits", minNormal: 55, maxNormal: 110, defaultVal: 78, step: 5 },
+              { id: "fruit_dia", diagType: "size", label: "Berry Diameter", unit: "mm", minNormal: 20, maxNormal: 30, defaultVal: 24, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 5.0, maxNormal: 8.0, defaultVal: 6.2, step: 0.5 }
+            ]
+          }
+        ]
+      },
+      green_capsicum: {
+        name: "Green Capsicum",
+        maturityDays: 85,
+        plantsPerAcre: 8000,
+        targetYieldPerPlantKg: 1.5,
+        stages: [
+          {
+            maxAge: 30,
+            stageCategory: "Vegetative",
+            stageName: "Vegetative Stage (1–30 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Plant Height", unit: "cm", minNormal: 18, maxNormal: 30, defaultVal: 24, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 2.5, maxNormal: 4.5, defaultVal: 3.4, step: 0.5 },
+              { id: "branches", diagType: "foliage", label: "Main Fork Branches", unit: "branches", minNormal: 2, maxNormal: 4, defaultVal: 3, step: 1 }
+            ]
+          },
+          {
+            maxAge: 55,
+            stageCategory: "Flowering",
+            stageName: "Flowering Stage (31–55 DAS)",
+            parameters: [
+              { id: "flowers", diagType: "flowers", label: "Open White Flowers", unit: "flowers", minNormal: 10, maxNormal: 20, defaultVal: 14, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.0, maxNormal: 5.0, defaultVal: 3.8, step: 0.5 },
+              { id: "canopy", diagType: "foliage", label: "Canopy Spread", unit: "cm", minNormal: 30, maxNormal: 45, defaultVal: 36, step: 1 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Fruit Sizing (56+ DAS)",
+            parameters: [
+              { id: "fruits", diagType: "fruits", label: "Capsicums per Plant", unit: "fruits", minNormal: 8, maxNormal: 16, defaultVal: 11, step: 1 },
+              { id: "fruit_width", diagType: "size", label: "Fruit Width", unit: "mm", minNormal: 65, maxNormal: 90, defaultVal: 76, step: 2 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.0, maxNormal: 5.5, defaultVal: 4.0, step: 0.5 }
+            ]
+          }
+        ]
+      },
+      bell_peppers: {
+        name: "Colored Bell Peppers",
+        maturityDays: 100,
+        plantsPerAcre: 8000,
+        targetYieldPerPlantKg: 1.6,
+        stages: [
+          {
+            maxAge: 35,
+            stageCategory: "Vegetative",
+            stageName: "Vegetative Stage (1–35 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Plant Height", unit: "cm", minNormal: 22, maxNormal: 36, defaultVal: 28, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.0, maxNormal: 5.0, defaultVal: 3.8, step: 0.5 },
+              { id: "stems", diagType: "foliage", label: "Leader Stems", unit: "stems", minNormal: 2, maxNormal: 4, defaultVal: 3, step: 1 }
+            ]
+          },
+          {
+            maxAge: 65,
+            stageCategory: "Flowering",
+            stageName: "Flowering & Set (36–65 DAS)",
+            parameters: [
+              { id: "flowers", diagType: "flowers", label: "Open Flowers Count", unit: "flowers", minNormal: 12, maxNormal: 22, defaultVal: 16, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.5, maxNormal: 5.5, defaultVal: 4.4, step: 0.5 },
+              { id: "height", diagType: "height", label: "Plant Height", unit: "cm", minNormal: 50, maxNormal: 75, defaultVal: 62, step: 2 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Bell Sizing & Color (66+ DAS)",
+            parameters: [
+              { id: "fruits", diagType: "fruits", label: "Bell Peppers per Plant", unit: "fruits", minNormal: 8, maxNormal: 15, defaultVal: 11, step: 1 },
+              { id: "fruit_len", diagType: "size", label: "Fruit Length", unit: "mm", minNormal: 80, maxNormal: 110, defaultVal: 92, step: 2 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.5, maxNormal: 6.0, defaultVal: 4.5, step: 0.5 }
+            ]
+          }
+        ]
+      },
+      zucchini: {
+        name: "Zucchini",
+        maturityDays: 55,
+        plantsPerAcre: 3600,
+        targetYieldPerPlantKg: 2.2,
+        stages: [
+          {
+            maxAge: 20,
+            stageCategory: "Vegetative",
+            stageName: "Bush Vegetative (1–20 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Bush Height", unit: "cm", minNormal: 18, maxNormal: 30, defaultVal: 24, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 1.5, maxNormal: 3.5, defaultVal: 2.4, step: 0.5 },
+              { id: "leaves", diagType: "foliage", label: "Expanded Leaves", unit: "leaves", minNormal: 5, maxNormal: 9, defaultVal: 7, step: 1 }
+            ]
+          },
+          {
+            maxAge: 35,
+            stageCategory: "Flowering",
+            stageName: "Flowering Stage (21–35 DAS)",
+            parameters: [
+              { id: "female_flowers", diagType: "flowers", label: "Female Flowers", unit: "flowers", minNormal: 3, maxNormal: 7, defaultVal: 5, step: 1 },
+              { id: "male_flowers", diagType: "flowers", label: "Male Flowers", unit: "flowers", minNormal: 4, maxNormal: 9, defaultVal: 6, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 2.0, maxNormal: 4.0, defaultVal: 2.8, step: 0.5 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Courgette Harvest (36+ DAS)",
+            parameters: [
+              { id: "fruits", diagType: "fruits", label: "Marketable Zucchinis", unit: "fruits", minNormal: 3, maxNormal: 7, defaultVal: 5, step: 1 },
+              { id: "fruit_len", diagType: "size", label: "Fruit Length", unit: "cm", minNormal: 16, maxNormal: 24, defaultVal: 19, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 2.0, maxNormal: 4.5, defaultVal: 3.0, step: 0.5 }
+            ]
+          }
+        ]
+      },
+      broccoli: {
+        name: "Broccoli",
+        maturityDays: 75,
+        plantsPerAcre: 12000,
+        targetYieldPerPlantKg: 0.45,
+        stages: [
+          {
+            maxAge: 30,
+            stageCategory: "Vegetative",
+            stageName: "Vegetative Rosette (1–30 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Plant Height", unit: "cm", minNormal: 20, maxNormal: 32, defaultVal: 25, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Stem Internode Length", unit: "cm", minNormal: 1.5, maxNormal: 3.0, defaultVal: 2.2, step: 0.5 },
+              { id: "leaves", diagType: "foliage", label: "Wrapper Frame Leaves", unit: "leaves", minNormal: 8, maxNormal: 13, defaultVal: 10, step: 1 }
+            ]
+          },
+          {
+            maxAge: 50,
+            stageCategory: "Flowering",
+            stageName: "Crown Buttoning (31–50 DAS)",
+            parameters: [
+              { id: "head_dia", diagType: "size", label: "Central Curd Width", unit: "cm", minNormal: 4, maxNormal: 9, defaultVal: 6, step: 0.5 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 2.0, maxNormal: 3.5, defaultVal: 2.6, step: 0.5 },
+              { id: "leaves", diagType: "foliage", label: "Outer Healthy Leaves", unit: "leaves", minNormal: 13, maxNormal: 19, defaultVal: 16, step: 1 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Head Compacting (51+ DAS)",
+            parameters: [
+              { id: "head_dia", diagType: "size", label: "Main Head Diameter", unit: "cm", minNormal: 12, maxNormal: 18, defaultVal: 15, step: 0.5 },
+              { id: "stalk_dia", diagType: "height", label: "Stalk Thickness", unit: "mm", minNormal: 28, maxNormal: 42, defaultVal: 34, step: 1 },
+              { id: "side_shoots", diagType: "foliage", label: "Side Shoots", unit: "shoots", minNormal: 2, maxNormal: 6, defaultVal: 4, step: 1 }
+            ]
+          }
+        ]
+      },
+      red_cabbage: {
+        name: "Red Cabbage",
+        maturityDays: 90,
+        plantsPerAcre: 12000,
+        targetYieldPerPlantKg: 0.95,
+        stages: [
+          {
+            maxAge: 35,
+            stageCategory: "Vegetative",
+            stageName: "Cupping Stage (1–35 DAS)",
+            parameters: [
+              { id: "rosette", diagType: "height", label: "Rosette Spread", unit: "cm", minNormal: 24, maxNormal: 38, defaultVal: 30, step: 1 },
+              { id: "leaves", diagType: "foliage", label: "Outer Frame Leaves", unit: "leaves", minNormal: 9, maxNormal: 14, defaultVal: 11, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Core Internode", unit: "cm", minNormal: 1.0, maxNormal: 2.2, defaultVal: 1.5, step: 0.2 }
+            ]
+          },
+          {
+            maxAge: 65,
+            stageCategory: "Flowering",
+            stageName: "Early Head Folding (36–65 DAS)",
+            parameters: [
+              { id: "head_dia", diagType: "size", label: "Developing Head Width", unit: "cm", minNormal: 8, maxNormal: 13, defaultVal: 10, step: 0.5 },
+              { id: "wrapper_leaves", diagType: "foliage", label: "Wrapper Leaves", unit: "leaves", minNormal: 12, maxNormal: 18, defaultVal: 15, step: 1 },
+              { id: "rosette", diagType: "height", label: "Plant Spread", unit: "cm", minNormal: 40, maxNormal: 55, defaultVal: 46, step: 1 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Head Firming (66+ DAS)",
+            parameters: [
+              { id: "head_dia", diagType: "size", label: "Mature Head Diameter", unit: "cm", minNormal: 14, maxNormal: 20, defaultVal: 16.5, step: 0.5 },
+              { id: "est_weight", diagType: "fruits", label: "Est. Head Weight", unit: "g", minNormal: 850, maxNormal: 1350, defaultVal: 1050, step: 50 }
+            ]
+          }
+        ]
+      },
+      maize: {
+        name: "Maize (Corn)",
+        maturityDays: 95,
+        plantsPerAcre: 22000,
+        targetYieldPerPlantKg: 0.32,
+        stages: [
+          {
+            maxAge: 35,
+            stageCategory: "Vegetative",
+            stageName: "Vegetative V-Stage (1–35 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Whorl Height", unit: "cm", minNormal: 35, maxNormal: 65, defaultVal: 48, step: 2 },
+              { id: "node_len", diagType: "node_len", label: "Stalk Internode", unit: "cm", minNormal: 5, maxNormal: 10, defaultVal: 7.5, step: 0.5 },
+              { id: "leaves", diagType: "foliage", label: "Collared Leaves", unit: "leaves", minNormal: 6, maxNormal: 10, defaultVal: 8, step: 1 }
+            ]
+          },
+          {
+            maxAge: 65,
+            stageCategory: "Flowering",
+            stageName: "Tasseling & Silking (36–65 DAS)",
+            parameters: [
+              { id: "ears", diagType: "flowers", label: "Silking Ear Shoots", unit: "ears", minNormal: 1, maxNormal: 2, defaultVal: 2, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 12, maxNormal: 18, defaultVal: 15, step: 0.5 },
+              { id: "height", diagType: "height", label: "Stalk Height", unit: "cm", minNormal: 140, maxNormal: 195, defaultVal: 165, step: 5 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Cob Filling (66+ DAS)",
+            parameters: [
+              { id: "cobs", diagType: "fruits", label: "Filled Cobs", unit: "cobs", minNormal: 1, maxNormal: 2, defaultVal: 2, step: 1 },
+              { id: "cob_len", diagType: "size", label: "Primary Cob Length", unit: "cm", minNormal: 17, maxNormal: 23, defaultVal: 20, step: 0.5 },
+              { id: "kernel_rows", diagType: "size", label: "Kernel Rows", unit: "rows", minNormal: 14, maxNormal: 18, defaultVal: 16, step: 2 }
+            ]
+          }
+        ]
+      },
+      french_beans: {
+        name: "French Beans",
+        maturityDays: 60,
+        plantsPerAcre: 35000,
+        targetYieldPerPlantKg: 0.13,
+        stages: [
+          {
+            maxAge: 20,
+            stageCategory: "Vegetative",
+            stageName: "Vegetative Stage (1–20 DAS)",
+            parameters: [
+              { id: "height", diagType: "height", label: "Bush Height", unit: "cm", minNormal: 15, maxNormal: 25, defaultVal: 20, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 2.5, maxNormal: 4.5, defaultVal: 3.2, step: 0.5 },
+              { id: "leaves", diagType: "foliage", label: "Trifoliate Leaves", unit: "leaves", minNormal: 5, maxNormal: 9, defaultVal: 7, step: 1 }
+            ]
+          },
+          {
+            maxAge: 38,
+            stageCategory: "Flowering",
+            stageName: "Flowering Stage (21–38 DAS)",
+            parameters: [
+              { id: "flowers", diagType: "flowers", label: "Open Bean Flowers", unit: "flowers", minNormal: 14, maxNormal: 28, defaultVal: 20, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.0, maxNormal: 5.0, defaultVal: 3.8, step: 0.5 },
+              { id: "branches", diagType: "foliage", label: "Fruiting Branches", unit: "branches", minNormal: 4, maxNormal: 7, defaultVal: 5, step: 1 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Pod Filling (39+ DAS)",
+            parameters: [
+              { id: "pods", diagType: "fruits", label: "Tender Pods per Plant", unit: "pods", minNormal: 18, maxNormal: 34, defaultVal: 25, step: 1 },
+              { id: "pod_len", diagType: "size", label: "Average Pod Length", unit: "cm", minNormal: 12, maxNormal: 16, defaultVal: 14, step: 0.5 },
+              { id: "node_len", diagType: "node_len", label: "Internode Length", unit: "cm", minNormal: 3.0, maxNormal: 5.5, defaultVal: 4.0, step: 0.5 }
+            ]
+          }
+        ]
+      },
+      watermelon: {
+        name: "Watermelon",
+        maturityDays: 85,
+        plantsPerAcre: 1800,
+        targetYieldPerPlantKg: 8.5,
+        stages: [
+          {
+            maxAge: 30,
+            stageCategory: "Vegetative",
+            stageName: "Vine Running (1–30 DAS)",
+            parameters: [
+              { id: "vine_len", diagType: "height", label: "Main Vine Length", unit: "cm", minNormal: 45, maxNormal: 85, defaultVal: 62, step: 2 },
+              { id: "node_len", diagType: "node_len", label: "Vine Internode", unit: "cm", minNormal: 6, maxNormal: 11, defaultVal: 8.5, step: 0.5 },
+              { id: "laterals", diagType: "foliage", label: "Lateral Vines", unit: "vines", minNormal: 3, maxNormal: 5, defaultVal: 4, step: 1 }
+            ]
+          },
+          {
+            maxAge: 55,
+            stageCategory: "Flowering",
+            stageName: "Flowering & Set (31–55 DAS)",
+            parameters: [
+              { id: "female_flowers", diagType: "flowers", label: "Female Flowers / Melons", unit: "count", minNormal: 3, maxNormal: 6, defaultVal: 4, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Vine Internode", unit: "cm", minNormal: 8, maxNormal: 14, defaultVal: 10.5, step: 0.5 },
+              { id: "vine_len", diagType: "height", label: "Main Vine Length", unit: "cm", minNormal: 130, maxNormal: 210, defaultVal: 165, step: 5 }
+            ]
+          },
+          {
+            maxAge: 200,
+            stageCategory: "Fruiting",
+            stageName: "Melon Sizing (56+ DAS)",
+            parameters: [
+              { id: "melons", diagType: "fruits", label: "Developing Melons", unit: "melons", minNormal: 2, maxNormal: 4, defaultVal: 3, step: 1 },
+              { id: "circumference", diagType: "size", label: "Melon Circumference", unit: "cm", minNormal: 48, maxNormal: 68, defaultVal: 56, step: 1 },
+              { id: "node_len", diagType: "node_len", label: "Vine Internode", unit: "cm", minNormal: 8, maxNormal: 14, defaultVal: 11, step: 0.5 }
+            ]
+          }
+        ]
+      }
+    };
+
+    const PLANTS_PER_ACRE = 20;
+
+    let currentPlantIndex = 1;
+    let totalPlantsInPlot = 20;
+    let currentSessionPlants = {};
+
+    function getAllDeviceLogs() {
+      try {
+        return JSON.parse(localStorage.getItem(HARDCODED_CLOUD_CONFIG.storageKey) || "[]");
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function getActiveScoutName() {
+      return document.getElementById("scoutLoginInput").value.trim() || "Scout";
+    }
+
+    function getMyScoutLogs() {
+      const activeScout = getActiveScoutName().toLowerCase();
+      return getAllDeviceLogs().filter((l) => (l.scout || "").toLowerCase() === activeScout);
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById("toastEl");
+      el.textContent = msg;
+      el.style.display = "block";
+      setTimeout(() => { el.style.display = "none"; }, 2800);
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-screen").forEach((s) => s.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+      document.querySelectorAll(".nav-item").forEach((btn) => {
+        btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
+      });
+      renderAllAnalytics();
+      renderMyPersonalLogs();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function getActiveStage(cropKey, ageDays) {
+      const crop = CROP_DATABASE[cropKey];
+      for (const st of crop.stages) {
+        if (ageDays <= st.maxAge) return st;
+      }
+      return crop.stages[crop.stages.length - 1];
+    }
+
+    function classifyParam(val, minNormal, maxNormal) {
+      if (val < minNormal) return { label: "Low Growth", code: "low", badge: "badge-low" };
+      if (val > maxNormal) return { label: "High Growth", code: "high", badge: "badge-high" };
+      return { label: "Normal Growth", code: "normal", badge: "badge-normal" };
+    }
+
+    function classifyPlantOverall(values, stageParams) {
+      let hasLow = false, hasHigh = false;
+      stageParams.forEach((p) => {
+        const v = parseFloat(values[p.id]);
+        if (v < p.minNormal) hasLow = true;
+        else if (v > p.maxNormal) hasHigh = true;
+      });
+      if (hasLow) return { label: "Low Growth", code: "low" };
+      if (hasHigh) return { label: "High Growth", code: "high" };
+      return { label: "Normal Growth", code: "normal" };
+    }
+
+    function refreshSetup() {
+      const acres = Math.max(0.25, parseFloat(document.getElementById("plotArea").value) || 1);
+      const cropKey = document.getElementById("cropSelect").value;
+      const ageDays = Math.max(1, parseInt(document.getElementById("cropAge").value, 10) || 1);
+      const stage = getActiveStage(cropKey, ageDays);
+
+      totalPlantsInPlot = Math.round(acres * PLANTS_PER_ACRE);
+      if (currentPlantIndex > totalPlantsInPlot) currentPlantIndex = 1;
+
+      document.getElementById("stageBadgeHeader").textContent = stage.stageName.split(" (")[0];
+      document.getElementById("sampleRuleText").textContent = `Target: ${totalPlantsInPlot} Plants (${acres} Ac × 20)`;
+
+      renderPlantStrip();
+      renderMobilePlantForm();
+      renderAllAnalytics();
+      renderMyPersonalLogs();
+    }
+
+    function renderPlantStrip() {
+      const strip = document.getElementById("plantChipStrip");
+      strip.innerHTML = "";
+      let savedCount = 0;
+
+      for (let i = 1; i <= totalPlantsInPlot; i++) {
+        const entry = currentSessionPlants[i];
+        if (entry) savedCount++;
+
+        const chip = document.createElement("div");
+        let statusClass = "";
+        if (entry) {
+          statusClass = entry.code === "low" ? " saved-low" : entry.code === "high" ? " saved-high" : " saved-normal";
+        }
+        chip.className = "plant-chip" + statusClass + (i === currentPlantIndex ? " active" : "");
+        chip.textContent = entry ? `✓#${i}` : `#${i}`;
+        chip.addEventListener("click", () => {
+          currentPlantIndex = i;
+          renderPlantStrip();
+          renderMobilePlantForm();
+        });
+        strip.appendChild(chip);
+      }
+
+      const pct = Math.round((savedCount / totalPlantsInPlot) * 100);
+      document.getElementById("plantProgressBadge").textContent = `${savedCount} / ${totalPlantsInPlot} Logged`;
+      document.getElementById("progressBarFill").style.width = `${pct}%`;
+    }
+
+    function renderMobilePlantForm() {
+      const cropKey = document.getElementById("cropSelect").value;
+      const ageDays = Math.max(1, parseInt(document.getElementById("cropAge").value, 10) || 1);
+      const stage = getActiveStage(cropKey, ageDays);
+
+      document.getElementById("plantRecorderHeader").textContent = `Marked Plant #${currentPlantIndex} of ${totalPlantsInPlot}`;
+      const existing = currentSessionPlants[currentPlantIndex];
+
+      const container = document.getElementById("mobileParamsContainer");
+      container.innerHTML = "";
+
+      stage.parameters.forEach((param) => {
+        const val = existing && existing.values[param.id] !== undefined ? existing.values[param.id] : param.defaultVal;
+        const st = classifyParam(val, param.minNormal, param.maxNormal);
+        const stepVal = param.step || 1;
+
+        const card = document.createElement("div");
+        card.className = "param-mobile-card";
+        card.innerHTML = `
+          <div class="param-top-row">
+            <label style="margin-bottom:0;">${param.label} (${param.unit})</label>
+            <span class="badge ${st.badge} param-live-badge">${st.label}</span>
+          </div>
+          <div class="stepper-row">
+            <button type="button" class="stepper-btn minus-btn">−</button>
+            <input type="number" step="${stepVal}" inputmode="decimal" data-param-id="${param.id}" value="${val}" class="mobile-param-input" />
+            <button type="button" class="stepper-btn plus-btn">+</button>
+          </div>
+          <div class="hint" style="margin-top: 6px; text-align: center;">
+            Healthy Target: <strong>${param.minNormal} – ${param.maxNormal} ${param.unit}</strong>
+          </div>
+        `;
+
+        const inputEl = card.querySelector("input");
+        const badgeEl = card.querySelector(".param-live-badge");
+        const updateBadge = () => {
+          const v = parseFloat(inputEl.value) || 0;
+          const res = classifyParam(v, param.minNormal, param.maxNormal);
+          badgeEl.className = `badge ${res.badge} param-live-badge`;
+          badgeEl.textContent = res.label;
+        };
+
+        card.querySelector(".minus-btn").addEventListener("click", () => {
+          inputEl.value = Math.max(0, +(parseFloat(inputEl.value || 0) - stepVal).toFixed(1));
+          updateBadge();
+        });
+        card.querySelector(".plus-btn").addEventListener("click", () => {
+          inputEl.value = +(parseFloat(inputEl.value || 0) + stepVal).toFixed(1);
+          updateBadge();
+        });
+        inputEl.addEventListener("input", updateBadge);
+
+        container.appendChild(card);
+      });
+    }
+
+    function saveCurrentPlantAndNext() {
+      const cropKey = document.getElementById("cropSelect").value;
+      const ageDays = Math.max(1, parseInt(document.getElementById("cropAge").value, 10) || 1);
+      const stage = getActiveStage(cropKey, ageDays);
+
+      const values = {};
+      document.querySelectorAll(".mobile-param-input").forEach((inp) => {
+        values[inp.getAttribute("data-param-id")] = parseFloat(inp.value) || 0;
+      });
+
+      const overall = classifyPlantOverall(values, stage.parameters);
+      currentSessionPlants[currentPlantIndex] = {
+        plantNumber: currentPlantIndex,
+        values,
+        overallStatus: overall.label,
+        code: overall.code
+      };
+
+      const savedNum = currentPlantIndex;
+      if (currentPlantIndex < totalPlantsInPlot) currentPlantIndex++;
+      renderPlantStrip();
+      renderMobilePlantForm();
+      renderAllAnalytics();
+      showToast(`✓ Saved Plant #${savedNum} (${overall.label})`);
+    }
+
+    function calculateHarvestForecast() {
+      const acres = Math.max(0.25, parseFloat(document.getElementById("plotArea").value) || 1);
+      const cropKey = document.getElementById("cropSelect").value;
+      const crop = CROP_DATABASE[cropKey];
+      const ageDays = Math.max(1, parseInt(document.getElementById("cropAge").value, 10) || 1);
+      const stage = getActiveStage(cropKey, ageDays);
+      const inspectDateStr = document.getElementById("inspectDate").value || "2026-10-14";
+
+      const plantsList = Object.values(currentSessionPlants);
+      let lowCount = 0, normalCount = 0, highCount = 0;
+      const lowPlantNums = [];
+
+      plantsList.forEach((p) => {
+        if (p.code === "low") {
+          lowCount++;
+          lowPlantNums.push(`#${p.plantNumber}`);
+        } else if (p.code === "high") {
+          highCount++;
+        } else {
+          normalCount++;
+        }
+      });
+
+      const loggedTotal = plantsList.length;
+      const denom = Math.max(1, loggedTotal);
+      const lowRatio = loggedTotal > 0 ? lowCount / denom : 0;
+      const normalRatio = loggedTotal > 0 ? normalCount / denom : 1;
+      const highRatio = loggedTotal > 0 ? highCount / denom : 0;
+
+      const healthFactor = +(normalRatio * 1.0 + highRatio * 1.06 + lowRatio * 0.62).toFixed(3);
+      const baseRemainingDays = Math.max(2, crop.maturityDays - ageDays);
+      const delayDays = Math.round(lowRatio * 12 - highRatio * 3);
+      const adjustedRemainingDays = Math.max(1, baseRemainingDays + delayDays);
+
+      const baseDate = new Date(inspectDateStr + "T00:00:00");
+      const harvestDate = new Date(baseDate.getTime() + adjustedRemainingDays * 86400000);
+      const harvestDateFormatted = harvestDate.toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      });
+      const harvestDateISO = harvestDate.toISOString().slice(0, 10);
+
+      const totalCommercialPlants = Math.round(acres * crop.plantsPerAcre);
+      const idealYieldKg = Math.round(totalCommercialPlants * crop.targetYieldPerPlantKg);
+      const projectedYieldKg = Math.round(idealYieldKg * healthFactor);
+      const recoverableKg = Math.max(0, idealYieldKg - projectedYieldKg);
+
+      let detectedIssue = "Normal healthy growth across logged plants";
+      let detectedSolution = "Continue standard fertigation & irrigation schedule";
+      if (lowCount > 0) {
+        for (const p of plantsList) {
+          if (p.code === "low") {
+            for (const param of stage.parameters) {
+              if (p.values[param.id] < param.minNormal) {
+                const rule = AGRONOMIC_ADVISOR[param.diagType] || AGRONOMIC_ADVISOR.height;
+                detectedIssue = `Low ${param.label} (<${param.minNormal} ${param.unit})`;
+                detectedSolution = rule.lowSolution;
+                break;
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      const flaggedStr = lowPlantNums.length > 0 ? `Plants ${lowPlantNums.join(", ")}` : "None";
+      const topIssueSummary =
+        lowCount > 0
+          ? `${flaggedStr}: ${detectedIssue} → Fix: ${detectedSolution}`
+          : "All logged plants within healthy target range";
+
+      return {
+        crop,
+        stage,
+        acres,
+        ageDays,
+        loggedTotal,
+        lowCount,
+        normalCount,
+        highCount,
+        flaggedPlants: flaggedStr,
+        issue: detectedIssue,
+        solution: detectedSolution,
+        topIssue: topIssueSummary,
+        healthFactorPct: Math.round(healthFactor * 100),
+        baseRemainingDays,
+        delayDays,
+        adjustedRemainingDays,
+        harvestDateFormatted,
+        harvestDateISO,
+        totalCommercialPlants,
+        idealYieldKg,
+        projectedYieldKg,
+        projectedTonnes: +(projectedYieldKg / 1000).toFixed(2),
+        recoverableKg
+      };
+    }
+
+    function renderAllAnalytics() {
+      const plotName = document.getElementById("plotName").value.trim() || "Current Plot";
+      const forecast = calculateHarvestForecast();
+      const { crop, stage, acres, ageDays, loggedTotal } = forecast;
+
+      document.getElementById("dashPlotTitle").textContent = `${plotName} (${acres} Ac) • ${crop.name}`;
+      document.getElementById("dashStageSub").textContent = `Day ${ageDays} • ${stage.stageName} • ${loggedTotal} of ${totalPlantsInPlot} Plants Logged`;
+
+      document.getElementById("kpiLowCount").textContent = forecast.lowCount;
+      document.getElementById("kpiNormalCount").textContent = forecast.normalCount;
+      document.getElementById("kpiHighCount").textContent = forecast.highCount;
+
+      const denom = Math.max(1, loggedTotal);
+      document.getElementById("barLow").style.width = loggedTotal > 0 ? `${(forecast.lowCount / denom) * 100}%` : "0%";
+      document.getElementById("barNormal").style.width = loggedTotal > 0 ? `${(forecast.normalCount / denom) * 100}%` : "0%";
+      document.getElementById("barHigh").style.width = loggedTotal > 0 ? `${(forecast.highCount / denom) * 100}%` : "0%";
+
+      const heatmap = document.getElementById("heatmapGrid");
+      heatmap.innerHTML = "";
+      for (let i = 1; i <= totalPlantsInPlot; i++) {
+        const p = currentSessionPlants[i];
+        const cell = document.createElement("div");
+        cell.className = "heatmap-cell" + (p ? ` ${p.code}` : "");
+        cell.innerHTML = `#${i}<br><span style="font-size:10px;font-weight:600;">${
+          p ? (p.code === "low" ? "LOW" : p.code === "high" ? "HIGH" : "OK") : "—"
+        }</span>`;
+        cell.addEventListener("click", () => {
+          currentPlantIndex = i;
+          switchTab("tab-entry");
+          renderPlantStrip();
+          renderMobilePlantForm();
+        });
+        heatmap.appendChild(cell);
+      }
+
+      const avgContainer = document.getElementById("paramAveragesList");
+      avgContainer.innerHTML = "";
+      const plantsList = Object.values(currentSessionPlants);
+      stage.parameters.forEach((param) => {
+        let sum = 0, count = 0;
+        plantsList.forEach((p) => {
+          if (p.values[param.id] !== undefined) {
+            sum += p.values[param.id];
+            count++;
+          }
+        });
+        const avg = count > 0 ? +(sum / count).toFixed(1) : 0;
+        const st = classifyParam(avg, param.minNormal, param.maxNormal);
+
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13.5px;";
+        row.innerHTML = `
+          <div>
+            <strong>${param.label}</strong>
+            <div class="hint">Target: ${param.minNormal}–${param.maxNormal} ${param.unit}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:800;font-size:15px;">${count > 0 ? avg : "—"} ${param.unit}</div>
+            <span class="badge ${count > 0 ? st.badge : "badge-normal"}">${count > 0 ? st.label : "Not Logged Yet"}</span>
+          </div>
+        `;
+        avgContainer.appendChild(row);
+      });
+
+      renderAgronomicDiagnostics(stage);
+
+      document.getElementById("harvestHealthFactorBadge").textContent = `Crop Health Index: ${forecast.healthFactorPct}%`;
+      document.getElementById("harvestDateDisplay").textContent = forecast.harvestDateFormatted;
+      document.getElementById("harvestCountdownDisplay").textContent = `In ${forecast.adjustedRemainingDays} Days (${
+        forecast.delayDays > 0 ? `+${forecast.delayDays}d low-growth delay` : "On schedule"
+      })`;
+
+      document.getElementById("harvestYieldTonnesDisplay").textContent = `${forecast.projectedTonnes} Tonnes`;
+      document.getElementById("harvestYieldKgDisplay").textContent = `${forecast.projectedYieldKg.toLocaleString()} kg (${(
+        forecast.projectedYieldKg / 100
+      ).toFixed(1)} Quintals)`;
+
+      document.getElementById("harvestBreakdownBox").innerHTML = `
+        <div class="formula-row">
+          <span>Plants Logged in Sample (${acres} Ac):</span>
+          <strong>${loggedTotal} of ${totalPlantsInPlot} Marked Plants</strong>
+        </div>
+        <div class="formula-row">
+          <span>Crop Standard Cycle (${crop.name}):</span>
+          <strong>${crop.maturityDays} Days total (${forecast.baseRemainingDays} days left)</strong>
+        </div>
+        <div class="formula-row">
+          <span>Estimated Plant Population (${acres} Ac × ${crop.plantsPerAcre.toLocaleString()}/ac):</span>
+          <strong>${forecast.totalCommercialPlants.toLocaleString()} Plants</strong>
+        </div>
+        <div class="formula-row">
+          <span>100% Ideal Benchmark Yield (${crop.targetYieldPerPlantKg} kg/plant):</span>
+          <strong>${forecast.idealYieldKg.toLocaleString()} kg (${(forecast.idealYieldKg / 1000).toFixed(2)} T)</strong>
+        </div>
+        <div class="formula-row">
+          <span>Net Health-Adjusted Harvest Forecast (${forecast.healthFactorPct}%):</span>
+          <span>${forecast.projectedYieldKg.toLocaleString()} kg (${forecast.projectedTonnes} Tonnes)</span>
+        </div>
+      `;
+    }
+
+    function renderAgronomicDiagnostics(stage) {
+      const diagContainer = document.getElementById("diagnosticsContainer");
+      diagContainer.innerHTML = "";
+      const plantsList = Object.values(currentSessionPlants);
+
+      if (plantsList.length === 0) {
+        document.getElementById("attentionTotalBadge").textContent = "0 Flagged";
+        document.getElementById("navAdvisorBadge").style.display = "none";
+        diagContainer.innerHTML = `
+          <div style="padding: 16px; background: #f8fbf8; color: var(--muted); border: 1px dashed var(--border); border-radius: 10px; text-align: center;">
+            No plants logged yet for this plot. Enter plant measurements on <strong>📋 1. Entry</strong> to view diagnostics.
+          </div>
+        `;
+        return;
+      }
+
+      const issueGroups = {};
+      plantsList.forEach((plant) => {
+        stage.parameters.forEach((param) => {
+          const val = plant.values[param.id];
+          if (val < param.minNormal) {
+            const key = `${param.id}_low`;
+            if (!issueGroups[key]) issueGroups[key] = { param, type: "low", plants: [] };
+            issueGroups[key].plants.push({ num: plant.plantNumber, val });
+          } else if (val > param.maxNormal) {
+            const key = `${param.id}_high`;
+            if (!issueGroups[key]) issueGroups[key] = { param, type: "high", plants: [] };
+            issueGroups[key].plants.push({ num: plant.plantNumber, val });
+          }
+        });
+      });
+
+      const groupKeys = Object.keys(issueGroups);
+      const flaggedPlantsSet = new Set();
+      Object.values(issueGroups).forEach((g) => g.plants.forEach((p) => flaggedPlantsSet.add(p.num)));
+
+      const totalFlagged = flaggedPlantsSet.size;
+      document.getElementById("attentionTotalBadge").textContent = `${totalFlagged} Plants Need Attention`;
+
+      const navBadge = document.getElementById("navAdvisorBadge");
+      if (totalFlagged > 0) {
+        navBadge.style.display = "inline-block";
+        navBadge.textContent = totalFlagged;
+      } else {
+        navBadge.style.display = "none";
+      }
+
+      if (groupKeys.length === 0) {
+        diagContainer.innerHTML = `
+          <div style="padding: 16px; background: var(--normal-bg); color: var(--normal); border-radius: 10px; font-weight: 700; text-align: center;">
+            ✓ All ${plantsList.length} logged plant(s) are within the Normal Growth target range!
+          </div>
+        `;
+        return;
+      }
+
+      groupKeys.forEach((key) => {
+        const group = issueGroups[key];
+        const rule = AGRONOMIC_ADVISOR[group.param.diagType] || AGRONOMIC_ADVISOR.height;
+        const isLow = group.type === "low";
+
+        const card = document.createElement("div");
+        card.className = "issue-card" + (isLow ? "" : " high-issue");
+
+        const plantTagsHtml = group.plants
+          .map((p) => `<span class="plant-tag">Plant #${p.num} (${p.val} ${group.param.unit})</span>`)
+          .join("");
+
+        card.innerHTML = `
+          <div class="issue-title">
+            <span>${isLow ? "⚠️ Low Growth:" : "⚡ High Growth:"} ${group.param.label}</span>
+            <span class="badge ${isLow ? "badge-low" : "badge-high"}">${group.plants.length} Plant${group.plants.length === 1 ? "" : "s"}</span>
+          </div>
+          <div class="hint">Target range: <strong>${group.param.minNormal}–${group.param.maxNormal} ${group.param.unit}</strong> • Marked plants affected:</div>
+          <div class="plant-tag-list">${plantTagsHtml}</div>
+          <div class="solution-box">
+            <div style="margin-bottom: 4px;"><strong>🔍 Diagnosis:</strong> ${isLow ? rule.lowIssue : rule.highIssue} — <em>${isLow ? rule.lowCause : rule.highCause}</em></div>
+            <div><strong>✅ Recommended Action:</strong> ${isLow ? rule.lowSolution : rule.highSolution}</div>
+          </div>
+        `;
+        diagContainer.appendChild(card);
+      });
+    }
+
+    function renderMyPersonalLogs() {
+      const activeScout = getActiveScoutName();
+      document.getElementById("myScoutNameHeader").textContent = activeScout;
+
+      const myLogs = getMyScoutLogs();
+      const myUnsynced = myLogs.filter((l) => !l.synced).length;
+      document.getElementById("unsyncedCountTop").textContent = `${myUnsynced} Pending Sync`;
+
+      const container = document.getElementById("mySavedLogsList");
+      container.innerHTML = "";
+
+      if (myLogs.length === 0) {
+        container.innerHTML = `
+          <div style="padding:16px; text-align:center; color:var(--muted); border:1px dashed var(--border); border-radius:10px;">
+            No plot inspections saved by <strong>${activeScout}</strong> on this device yet.
+          </div>
+        `;
+        return;
+      }
+
+      myLogs.forEach((item) => {
+        const div = document.createElement("div");
+        div.style.cssText = "padding:11px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;";
+        div.innerHTML = `
+          <div>
+            <strong>${item.plotName} (${item.acres} Ac) • ${item.cropName}</strong>
+            <div class="hint">${item.date} • Logged by ${item.scout}</div>
+            <div class="hint" style="color: var(--primary); font-weight: 700; margin-top: 2px;">
+              🌾 Est. Harvest: ${item.harvestDate} • Yield: ${item.projectedTonnes} Tonnes
+            </div>
+            <div style="margin-top:4px;">
+              <span class="badge badge-low">${item.counts.low} Low</span>
+              <span class="badge badge-normal">${item.counts.normal} Normal</span>
+              <span class="badge badge-high">${item.counts.high} High</span>
+            </div>
+          </div>
+          <div>
+            ${item.synced ? `<span class="badge badge-normal">✓ Synced to Google Sheet</span>` : `<span class="badge badge-high">⏳ Offline Queue</span>`}
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function createCurrentPlotRecord() {
+      if (Object.keys(currentSessionPlants).length === 0) {
+        saveCurrentPlantAndNext();
+      }
+
+      const plotNameInput = document.getElementById("plotName").value.trim();
+      const plotName = plotNameInput || "Unnamed Plot";
+      const scout = getActiveScoutName();
+      const forecast = calculateHarvestForecast();
+
+      return {
+        id: "LOG-" + Date.now(),
+        date: document.getElementById("inspectDate").value,
+        plotName,
+        acres: forecast.acres,
+        cropName: forecast.crop.name,
+        ageDays: forecast.ageDays,
+        stageCategory: forecast.stage.stageCategory,
+        stageLabel: forecast.stage.stageName,
+        scout,
+        counts: { low: forecast.lowCount, normal: forecast.normalCount, high: forecast.highCount },
+        flaggedPlants: forecast.flaggedPlants,
+        issue: forecast.issue,
+        solution: forecast.solution,
+        topIssue: forecast.topIssue,
+        harvestDate: forecast.harvestDateFormatted,
+        harvestDateISO: forecast.harvestDateISO,
+        projectedYieldKg: forecast.projectedYieldKg,
+        projectedTonnes: forecast.projectedTonnes,
+        synced: false
+      };
+    }
+
+    async function postRecordsToGoogleSheet(recordsToSync) {
+      if (!recordsToSync || recordsToSync.length === 0) return true;
+
+      const response = await fetch(HARDCODED_CLOUD_CONFIG.syncUrl, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ records: recordsToSync })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      return true;
+    }
+
+    function saveMyPlotOfflineOnly() {
+      const plotNameVal = document.getElementById("plotName").value.trim();
+      if (!plotNameVal) {
+        showToast("⚠️ Please enter a Plot Name on Tab 1 first!");
+        switchTab("tab-entry");
+        document.getElementById("plotName").focus();
+        return;
+      }
+      const newRec = createCurrentPlotRecord();
+      const allLogs = getAllDeviceLogs();
+      allLogs.unshift(newRec);
+      localStorage.setItem(HARDCODED_CLOUD_CONFIG.storageKey, JSON.stringify(allLogs));
+      renderMyPersonalLogs();
+      showToast(`💾 Saved ${newRec.plotName} offline!`);
+    }
+
+    async function saveAndSyncPlotNow() {
+      const plotNameVal = document.getElementById("plotName").value.trim();
+      if (!plotNameVal) {
+        showToast("⚠️ Please enter a Plot Name on Tab 1 before syncing!");
+        switchTab("tab-entry");
+        document.getElementById("plotName").focus();
+        return;
+      }
+
+      const btn = document.getElementById("saveAndSyncNowBtn");
+      const origText = btn.textContent;
+      btn.textContent = "⏳ Syncing to Google Sheet...";
+      btn.disabled = true;
+
+      const newRec = createCurrentPlotRecord();
+      let allLogs = getAllDeviceLogs();
+
+      try {
+        // Send ONLY this new plot + any genuinely unsynced offline records
+        const pendingLogs = allLogs.filter((l) => !l.synced);
+        const batchToSend = [newRec, ...pendingLogs];
+        await postRecordsToGoogleSheet(batchToSend);
+
+        newRec.synced = true;
+        allLogs = [newRec, ...allLogs.map((l) => ({ ...l, synced: true }))];
+        localStorage.setItem(HARDCODED_CLOUD_CONFIG.storageKey, JSON.stringify(allLogs));
+
+        if (syncChannel) {
+          try { syncChannel.postMessage({ type: "SYNC_SUCCESS" }); } catch (e) {}
+        }
+
+        const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        document.getElementById("lastSyncLabel").textContent =
+          `✓ Synced ${newRec.plotName} (${newRec.counts.low} Low, ${newRec.counts.normal} Normal, ${newRec.counts.high} High) at ${timeStr}`;
+        showToast(`✓ Synced ${newRec.plotName} to Google Sheet!`);
+      } catch (err) {
+        allLogs.unshift(newRec);
+        localStorage.setItem(HARDCODED_CLOUD_CONFIG.storageKey, JSON.stringify(allLogs));
+        document.getElementById("lastSyncLabel").textContent = `⚠️ Saved offline (${err.message})`;
+        showToast(`Saved offline — will sync when online.`);
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+        renderMyPersonalLogs();
+      }
+    }
+
+    async function syncPendingLogsNow() {
+      let allLogs = getAllDeviceLogs();
+      const unsynced = allLogs.filter((l) => !l.synced);
+
+      if (unsynced.length === 0) {
+        showToast("All saved plots on this device are already synced!");
+        return;
+      }
+
+      const btn = document.getElementById("syncServerBtn");
+      const origText = btn.textContent;
+      btn.textContent = "⏳ Syncing...";
+      btn.disabled = true;
+
+      try {
+        await postRecordsToGoogleSheet(unsynced);
+        allLogs = allLogs.map((l) => ({ ...l, synced: true }));
+        localStorage.setItem(HARDCODED_CLOUD_CONFIG.storageKey, JSON.stringify(allLogs));
+        if (syncChannel) {
+          try { syncChannel.postMessage({ type: "SYNC_SUCCESS" }); } catch (e) {}
+        }
+        const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        document.getElementById("lastSyncLabel").textContent = `✓ Synced ${unsynced.length} pending plot(s) at ${timeStr}`;
+        showToast(`✓ Synced ${unsynced.length} pending plot(s) to Google Sheet!`);
+      } catch (err) {
+        showToast(`⚠️ Sync failed (${err.message})`);
+      } finally {
+        btn.textContent = origText;
+        btn.disabled = false;
+        renderMyPersonalLogs();
+      }
+    }
+
+    // Event Listeners
+    document.querySelectorAll(".nav-item").forEach((btn) => {
+      btn.addEventListener("click", () => switchTab(btn.getAttribute("data-tab")));
+    });
+
+    const savedScout = localStorage.getItem(HARDCODED_CLOUD_CONFIG.userKey);
+    if (savedScout) {
+      document.getElementById("scoutLoginInput").value = savedScout;
+    }
+
+    document.getElementById("scoutLoginInput").addEventListener("input", () => {
+      localStorage.setItem(HARDCODED_CLOUD_CONFIG.userKey, getActiveScoutName());
+      renderMyPersonalLogs();
+    });
+
+    document.getElementById("plotArea").addEventListener("input", () => { currentSessionPlants = {}; refreshSetup(); });
+    document.getElementById("cropSelect").addEventListener("change", () => { currentSessionPlants = {}; refreshSetup(); });
+    document.getElementById("cropAge").addEventListener("input", refreshSetup);
+    document.getElementById("inspectDate").addEventListener("change", renderAllAnalytics);
+
+    document.getElementById("clearPlotSessionBtn").addEventListener("click", () => {
+      currentSessionPlants = {};
+      currentPlantIndex = 1;
+      refreshSetup();
+      showToast("Cleared current plot form.");
+    });
+
+    document.getElementById("clearLocalHistoryBtn").addEventListener("click", () => {
+      localStorage.removeItem(HARDCODED_CLOUD_CONFIG.storageKey);
+      renderMyPersonalLogs();
+      showToast("Cleared local history on this device.");
+    });
+
+    document.getElementById("prevPlantBtn").addEventListener("click", () => {
+      if (currentPlantIndex > 1) {
+        currentPlantIndex--;
+        renderPlantStrip();
+        renderMobilePlantForm();
+      }
+    });
+    document.getElementById("saveNextPlantBtn").addEventListener("click", saveCurrentPlantAndNext);
+    document.getElementById("savePlotToDbBtn").addEventListener("click", saveMyPlotOfflineOnly);
+    document.getElementById("saveAndSyncNowBtn").addEventListener("click", saveAndSyncPlotNow);
+    document.getElementById("syncServerBtn").addEventListener("click", syncPendingLogsNow);
+
+    refreshSetup();
+    renderMyPersonalLogs();
+  </script>
+</body>
+</html>
